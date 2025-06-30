@@ -1,16 +1,24 @@
 ```mermaid
 graph TD
     User[User/API Client]
+    subgraph GitHub Actions
+        CI[CI/CD Pipeline]
+    end
     subgraph Azure
         FunctionApp[Azure Linux Function App]
         PostLog[PostLog Function]
         GetLogs[GetLogs Function]
         Table[Azure Table Storage]
+        MI[(Managed Identity)]
     end
 
-    User -- HTTP POST /api/PostLog --> PostLog
-    User -- HTTP GET /api/GetLogs --> GetLogs
+    User -- HTTP POST /api/PostLog (HTTPS) --> PostLog
+    User -- HTTP GET /api/GetLogs (HTTPS) --> GetLogs
     PostLog -- Save Log Entry --> Table
     GetLogs -- Query Last 100 Logs --> Table
     PostLog & GetLogs -- Hosted in --> FunctionApp
+    FunctionApp -- Uses --> MI
+    MI -- Secure Access --> Table
+    CI -- Deploys --> FunctionApp
+    CI -- Provisions --> Table
 ```
