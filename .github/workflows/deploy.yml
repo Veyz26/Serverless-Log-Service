@@ -63,6 +63,12 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Install Azure Functions Core Tools
         run: npm install -g azure-functions-core-tools@4 --unsafe-perm true
+      - name: Check FUNCTION_APP_NAME
+        run: |
+          if [ -z "${{ env.FUNCTION_APP_NAME }}" ]; then
+            echo "FUNCTION_APP_NAME is not set. Terraform may have failed or not output the value."
+            exit 1
+          fi
       - name: Publish Azure Functions (PowerShell)
         run: |
           cd src
