@@ -1,0 +1,1 @@
+def main(req): pass

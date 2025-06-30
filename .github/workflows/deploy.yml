@@ -1,0 +1,67 @@
+name: Deploy Azure Log Service
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Run tfsec (Terraform security)
+        uses: aquasecurity/tfsec-action@v1.0.3
+        with:
+          working-directory: ./terraform
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  terraform:
+    needs: security
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Terraform Init
+        run: terraform -chdir=terraform init
+      - name: Terraform Apply
+        run: terraform -chdir=terraform apply -auto-approve
+      - name: Output Function App Name
+        id: tfoutput
+        run: echo "FUNCTION_APP_NAME=$(terraform -chdir=terraform output -raw function_app_name)" >> $GITHUB_ENV
+
+  deploy_function:
+    needs: terraform
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup PowerShell
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Install Azure Functions Core Tools
+        run: npm install -g azure-functions-core-tools@4 --unsafe-perm true
+      - name: Publish Azure Functions (PowerShell)
+        run: |
+          cd src
+          func azure functionapp publish ${{ env.FUNCTION_APP_NAME }}
