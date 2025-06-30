@@ -1,4 +1,4 @@
-# Log Service - Azure Functions (PowerShell)
+# Log Service - Azure Functions
 
 ## Overview
 This project implements a simple log service using Azure Functions (PowerShell) and Azure Table Storage, fully provisioned via **Terraform**.
@@ -14,6 +14,31 @@ This project implements a simple log service using Azure Functions (PowerShell) 
 - `Message`: Log message
 
 ## Deployment Instructions
+
+- Fork or clone this repository.
+- Set up GitHub Secrets:
+- Go to your repository on GitHub.
+- Navigate to: Settings > Secrets and variables > Actions > New repository secret.
+- Add the following secrets (get these from your Azure Portal or your Azure AD App Registration):
+  - AZURE_CLIENT_ID
+  - AZURE_TENANT_ID
+  - AZURE_SUBSCRIPTION_ID
+
+## (Optional) Set a GITHUB_TOKEN for MCP:
+The GITHUB_TOKEN is used by GitHub Actions for authentication and to avoid API rate limits.
+It is automatically provided by GitHub Actions, but you can create a Personal Access Token (PAT) for advanced scenarios. See: Creating a personal access token
+MCP (Managed Copilot Pipeline) uses this token to interact with the GitHub API securely.
+Push to main branch:
+The pipeline will run automatically, provisioning Azure resources and deploying your functions.
+Get your function app name:
+After deployment, the function app name is output by Terraform and set as an environment variable for the deployment job.
+You can also find it in the Azure Portal under "Function Apps".
+
+## Answers to Common Issues
+- Resource Group Already Exists: The workflow now destroys and recreates resources on each run, so you will not get resource group conflicts.
+- Must Specify functionApp Name: The workflow checks for FUNCTION_APP_NAME and fails early if it is missing, so you will not get this error at publish time.
+- GitHub API Rate Limits: The workflow uses the default GITHUB_TOKEN, but you can add a PAT if you need higher limits.
+- Where to get repo secrets: All Azure secrets are from your Azure Portal (App Registrations and Subscriptions). The GITHUB_TOKEN is provided by GitHub Actions.
 
 ### Prerequisites
 - Azure CLI
