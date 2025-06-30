@@ -42,7 +42,7 @@ jobs:
         run: terraform -chdir=terraform apply -auto-approve
       - name: Output Function App Name
         id: tfoutput
-        run: echo "FUNCTION_APP_NAME=$(terraform -chdir=terraform output -raw function_app_name)" >> $GITHUB_ENV
+        run: echo "FUNCTION_APP_NAME=$(terraform -chdir=terraform output -raw function_app_name -no-color | head -n 1)" >> $GITHUB_ENV
 
   deploy_function:
     needs: terraform
