@@ -1,0 +1,16 @@
+```mermaid
+graph TD
+    User[User/API Client]
+    subgraph Azure
+        FunctionApp[Azure Linux Function App]
+        PostLog[PostLog Function]
+        GetLogs[GetLogs Function]
+        Table[Azure Table Storage]
+    end
+
+    User -- HTTP POST /api/PostLog --> PostLog
+    User -- HTTP GET /api/GetLogs --> GetLogs
+    PostLog -- Save Log Entry --> Table
+    GetLogs -- Query Last 100 Logs --> Table
+    PostLog & GetLogs -- Hosted in --> FunctionApp
+```
