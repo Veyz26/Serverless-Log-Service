@@ -44,15 +44,8 @@ jobs:
         run: terraform -chdir=terraform apply -auto-approve
       - name: Output all Terraform Outputs (debug)
         run: terraform -chdir=terraform output -no-color
-      - name: Output Function App Name
-        id: tfoutput
-        run: |
-          FUNC_NAME=$(terraform -chdir=terraform output -raw function_app_name -no-color 2>/dev/null || true)
-          if [ -z "$FUNC_NAME" ]; then
-            echo "FUNCTION_APP_NAME is not set. Terraform may have failed or not output the value."
-            exit 1
-          fi
-          echo "FUNCTION_APP_NAME=$FUNC_NAME" >> $GITHUB_ENV
+      - name: Set FUNCTION_APP_NAME (logServiceFunctionApp)
+        run: echo "FUNCTION_APP_NAME=logServiceFunctionApp" >> $GITHUB_ENV
 
   deploy_function:
     needs: terraform
