@@ -43,6 +43,8 @@ jobs:
           if ! terraform -chdir=terraform state list | grep -q 'azurerm_resource_group.rg'; then
             terraform -chdir=terraform import azurerm_resource_group.rg /subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/rg-logService
           fi
+      - name: Terraform Destroy (cleanup)
+        run: terraform -chdir=terraform destroy -auto-approve
       - name: Terraform Apply
         run: terraform -chdir=terraform apply -auto-approve
       - name: Output Function App Name
